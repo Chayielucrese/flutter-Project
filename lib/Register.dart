@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:online_music_app/playlist.dart';
 import 'playlist.dart';
-
 class RegistrationForm extends StatefulWidget {
   @override
   _RegistrationFormState createState() => _RegistrationFormState();
@@ -40,7 +39,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
       _showLoginDialog(context);
     }
   }
-
   void _showLoginDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -52,32 +50,27 @@ class _RegistrationFormState extends State<RegistrationForm> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  labelStyle: TextStyle(color: Colors.white, fontSize: 20),
-                ),
+                decoration: InputDecoration(labelText: 'Email',   labelStyle: TextStyle(color: Colors.white, fontSize: 20), ),
+
               ),
               TextFormField(
-                decoration: InputDecoration(
-                    labelText: 'Password',
-                    labelStyle: TextStyle(color: Colors.white, fontSize: 20)),
+                decoration: InputDecoration(labelText: 'Password',  labelStyle: TextStyle(color: Colors.white, fontSize: 20)),
                 obscureText: true,
+
               ),
             ],
           ),
           actions: [
             ElevatedButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => playList()),
-                );
+Navigator.push(context, MaterialPageRoute(builder: (context)=>playList()));
               },
-              child: Text(
-                'Login',
-                style: TextStyle(color: Colors.purple, fontSize: 20),
+              child: Text('Login', style: TextStyle(color: Colors.purple, fontSize: 20),
+
               ),
             ),
+
+
           ],
         );
       },
