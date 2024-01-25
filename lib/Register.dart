@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:online_music_app/playlist.dart';
 import 'playlist.dart';
+import 'package:http/http.dart' as http;
+
 class RegistrationForm extends StatefulWidget {
+  const RegistrationForm({super.key});
+
   @override
   _RegistrationFormState createState() => _RegistrationFormState();
 }
@@ -27,17 +30,36 @@ class _RegistrationFormState extends State<RegistrationForm> {
       _showLoginForm = !_showLoginForm;
     });
   }
-
-  void _submitForm() {
+  void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       String name = _nameController.text;
       String surname = _surnameController.text;
       String email = _emailController.text;
       String password = _passwordController.text;
 
-      _formKey.currentState!.reset();
-      _showLoginDialog(context);
+      final response = await registerEndPoint(name, surname, email, password);
+      if (response.statusCode == 200) {
+        _formKey.currentState!.reset();
+        _showLoginDialog(context);
+      } else {
+        response.statusCode;
+      }
     }
+  }
+
+  Future<http.Response> registerEndPoint(
+      String name, String surname, String email, String password) async {
+    const url = 'http://localhost:4000/api/createuser';
+    final response = await http.post(
+      Uri.parse(url),
+      body: {
+        "name": name,
+        "surname": surname,
+        "email": email,
+        "password": password,
+      },
+    );
+    return response;
   }
   void _showLoginDialog(BuildContext context) {
     showDialog(

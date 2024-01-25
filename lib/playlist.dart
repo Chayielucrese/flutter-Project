@@ -25,7 +25,7 @@ class _playListState extends State<playList> {
       'title': 'papa',
       'singer': 'Dadju',
       'url':
-          'https://assets.mixkit.co/music/preview/mixkit-sun-and-his-daughter-580.json',
+          'https://example.com/shape-of-you.mp3',
       'coverUrl':
           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEl9YAlqY_qGHZikf2lIfqnv1h4R0skV9W8Btk2SemI_fHOOa-1KCvPHAMSCmyE_atMUs&usqp=CAU'
     },
