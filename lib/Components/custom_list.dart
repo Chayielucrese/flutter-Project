@@ -9,8 +9,6 @@ Widget customListTile({
   return  InkWell(
     onTap: onTap,
     child: Container(
-
-
     padding: EdgeInsets.all(8),
     child: Row(
       children: [

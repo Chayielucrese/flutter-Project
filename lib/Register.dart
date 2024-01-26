@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'playlist.dart';
 import 'package:http/http.dart' as http;
 
@@ -62,6 +63,37 @@ class _RegistrationFormState extends State<RegistrationForm> {
     return response;
   }
   void _showLoginDialog(BuildContext context) {
+    void _submitForm() async {
+      if (_formKey.currentState!.validate()) {
+        String name = _nameController.text;
+        String surname = _surnameController.text;
+        String email = _emailController.text;
+        String password = _passwordController.text;
+
+        Future<http.Response> login(String email, String password) async {
+          const url = 'http://localhost:4000/api/login';
+          final response = await http.post(
+            Uri.parse(url),
+            body: {
+              "email": email,
+              "pwd": password,
+            },
+          );
+          return response;
+        }
+
+        final response = await login(email, password);
+        if (response.statusCode == 200) {
+          _formKey.currentState!.reset();
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => playList()),
+          );
+        } else {
+          response.statusCode;
+        }
+      }
+    }
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -72,11 +104,11 @@ class _RegistrationFormState extends State<RegistrationForm> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
-                decoration: InputDecoration(labelText: 'Email',   labelStyle: TextStyle(color: Colors.white, fontSize: 20), ),
+                decoration: InputDecoration(labelText: 'Email',   labelStyle: TextStyle(color: Colors.white, fontSize: 15), ),
 
               ),
               TextFormField(
-                decoration: InputDecoration(labelText: 'Password',  labelStyle: TextStyle(color: Colors.white, fontSize: 20)),
+                decoration: InputDecoration(labelText: 'Password',  labelStyle: TextStyle(color: Colors.white, fontSize: 15)),
                 obscureText: true,
 
               ),
@@ -185,6 +217,23 @@ Navigator.push(context, MaterialPageRoute(builder: (context)=>playList()));
                     style: TextStyle(
                       color: Colors.purple,
                       fontSize: 20,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor:MaterialStateProperty.all(Colors.green)
+                  ),
+                  onPressed: (){
+                    _showLoginDialog(context);
+                  },
+                  child: Text(
+                    'Login',
+                    style: TextStyle(
+                      color: Colors.purple,
+                      fontSize: 20,
+                      backgroundColor: Colors.green
                     ),
                   ),
                 ),
