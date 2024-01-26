@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 Widget customListTile({
   required String title,
-  required String singer,
+  required String artistName,
   required String cover,
   onTap
 }) {
@@ -36,7 +36,7 @@ Widget customListTile({
             ),
             ),
             SizedBox(height: 5.0,),
-            Text(singer, style: TextStyle(color:Colors.white, fontSize: 16.0 ),)
+            Text(artistName, style: TextStyle(color:Colors.white, fontSize: 16.0 ),)
           ],
         )
       ],

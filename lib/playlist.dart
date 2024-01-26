@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
@@ -16,17 +18,23 @@ class _playListState extends State<playList> {
   bool isSearching = false;
   TextEditingController searchController = TextEditingController();
 
-  void searchSongsBySingerOrTitle(String singer, String title) async {
-    http.Response response = await http.post(
-      Uri.parse('http://localhost:4000/api/musicsearch'),
-      body: {'singer': singer, 'title': title},
-    );
+  void searchSongsBySingerOrTitle(String singer) async {
+    try {
+      http.Response response = await http.post(
+        Uri.parse('http://localhost:4000/api/musicsearch'),
+        body: {'singer': singer, 'title':""}
+      );
 
-    if (response.statusCode == 200) {
-      List songs = jsonDecode(response.body);
-      setState(() {
-        musicList = songs;
-      });
+      if (response.statusCode == 200) {
+        List songs = jsonDecode(response.body);
+        setState(() {
+          musicList = songs;
+        });
+      } else {
+        print('Failed to search songs. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('An error occurred while searching songs: $e');
     }
   }
 
@@ -42,18 +50,18 @@ class _playListState extends State<playList> {
   bool isPlaying = false;
   String currentSong = "";
 
-  void playMusic(String url) async {
-    if (isPlaying && currentSong != url) {
+  void playMusic(String link) async {
+    if (isPlaying && currentSong != link) {
       audioPlayer.pause();
-      await audioPlayer.play(url as Source);
+      await audioPlayer.play(link as Source);
 
-      if (audioPlayer.play(url as Source) == PlayerState.playing) {
+      if (audioPlayer.play(link as Source) == PlayerState.playing) {
         setState(() {
-          currentSong = url;
+          currentSong = link;
         });
       } else if (!isPlaying) {
-        await audioPlayer.play(url as Source);
-        if (audioPlayer.play(url as Source) == PlayerState.playing) {
+        await audioPlayer.play(link as Source);
+        if (audioPlayer.play(link as Source) == PlayerState.playing) {
           setState(() {
             isPlaying = true;
             btnIcon = Icons.play_arrow;
@@ -73,6 +81,7 @@ class _playListState extends State<playList> {
     }
   }
 
+  TextEditingController _searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,10 +95,9 @@ class _playListState extends State<playList> {
             elevation: 0,
             title: Row(
               children: [
-                Text("My PlayList"),
+                Text("Music Library"),
                 IconButton(
-                  icon: Icon(Icons.search),
-                  color: Colors.purple,
+                  icon: Icon(Icons.search, color: Colors.black),
                   onPressed: () {
                     setState(() {
                       isSearching = true;
@@ -99,16 +107,21 @@ class _playListState extends State<playList> {
                 Expanded(
                   child: isSearching
                       ? Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: TextField(
-                            controller: searchController,
-                            style: TextStyle(color: Colors.black),
-                            decoration: InputDecoration(
-                              hintText: 'Enter singer name',
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        )
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: TextField(
+                      controller: _searchController,
+                      style: TextStyle(color: Colors.black),
+                      onChanged: (value) {
+                        String input = value;
+                        debugPrint(input);
+                        print(input);
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Enter artistName or song title',
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  )
                       : Container(),
                 ),
                 if (isSearching)
@@ -117,15 +130,24 @@ class _playListState extends State<playList> {
                     onPressed: () {
                       setState(() {
                         isSearching = false;
-                        searchController.clear();
+                        _searchController.clear();
                       });
                     },
                   ),
+                ElevatedButton(
+                  onPressed: () {
+                    String input = _searchController.text;
+                    print('hello $input');
+                    searchSongsBySingerOrTitle(input);
+                  },
+                  child: Text('Submit', style: TextStyle(color: Colors.purple, fontSize: 20),),
+                ),
               ],
             ),
           ),
         ),
       ),
+
       body: Column(
         children: [
           Expanded(
@@ -134,14 +156,15 @@ class _playListState extends State<playList> {
                 itemBuilder: (context, index) => customListTile(
                     onTap: () {
                       setState(() {
-                        currentCover = musicList[index]['coverUrl'];
-                        currentSinger = musicList[index]['singer'];
+                        currentCover = musicList[index]['cover'];
+                        print(musicList[index]['cover']);
+                        currentSinger = musicList[index]['artistName'];
                         currentTitle = musicList[index]['title'];
                       });
                     },
                     title: musicList[index]['title'],
-                    singer: musicList[index]['singer'],
-                    cover: musicList[index]['coverUrl'])),
+                    artistName: musicList[index]['artistName'],
+                    cover: musicList[index]['cover'])),
           ),
           Container(
             decoration: BoxDecoration(color: Colors.white, boxShadow: [
