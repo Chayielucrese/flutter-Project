@@ -76,7 +76,7 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login'),
+        title: Text('Login', style: TextStyle(color: Colors.white),),
       ),
       body: Center(
         child: Text(

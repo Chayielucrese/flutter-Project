@@ -1,6 +1,3 @@
-import 'dart:async';
-
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import "package:http/http.dart" as http;
@@ -21,9 +18,8 @@ class _playListState extends State<playList> {
   void searchSongsBySingerOrTitle(String singer) async {
     try {
       http.Response response = await http.post(
-        Uri.parse('http://localhost:4000/api/musicsearch'),
-        body: {'singer': singer, 'title':""}
-      );
+          Uri.parse('http://localhost:4000/api/musicsearch'),
+          body: {'singer': singer, 'title': ""});
 
       if (response.statusCode == 200) {
         List songs = jsonDecode(response.body);
@@ -38,58 +34,14 @@ class _playListState extends State<playList> {
     }
   }
 
-  String currentCover = "";
-  String currentSinger = "";
-  String currentTitle = "";
-
-  Duration duration = new Duration();
-  Duration position = new Duration();
-
-  IconData btnIcon = Icons.play_arrow;
-  AudioPlayer audioPlayer = AudioPlayer();
-  bool isPlaying = false;
-  String currentSong = "";
-
-  void playMusic(String link) async {
-    if (isPlaying && currentSong != link) {
-      audioPlayer.pause();
-      await audioPlayer.play(link as Source);
-
-      if (audioPlayer.play(link as Source) == PlayerState.playing) {
-        setState(() {
-          currentSong = link;
-        });
-      } else if (!isPlaying) {
-        await audioPlayer.play(link as Source);
-        if (audioPlayer.play(link as Source) == PlayerState.playing) {
-          setState(() {
-            isPlaying = true;
-            btnIcon = Icons.play_arrow;
-          });
-        }
-      }
-      audioPlayer.onDurationChanged.listen((event) {
-        setState(() {
-          duration = event;
-        });
-      });
-      audioPlayer.onPositionChanged.listen((event) {
-        setState(() {
-          position = event;
-        });
-      });
-    }
-  }
-
   TextEditingController _searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.deepPurple.shade800.withOpacity(0.9),
+      backgroundColor: Colors.black.withOpacity(0.9),
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight),
         child: Container(
-          color: Colors.white,
           child: AppBar(
             backgroundColor: Colors.white,
             elevation: 0,
@@ -140,111 +92,145 @@ class _playListState extends State<playList> {
                     print('hello $input');
                     searchSongsBySingerOrTitle(input);
                   },
-                  child: Text('Submit', style: TextStyle(color: Colors.purple, fontSize: 20),),
+                  child: Text(
+                    'Submit',
+                    style: TextStyle(color: Colors.purple, fontSize: 20),
+                  ),
                 ),
               ],
             ),
           ),
         ),
       ),
-
       body: Column(
+
         children: [
           Expanded(
             child: ListView.builder(
-                itemCount: musicList.length,
-                itemBuilder: (context, index) => customListTile(
-                    onTap: () {
-                      setState(() {
-                        currentCover = musicList[index]['cover'];
-                        print(musicList[index]['cover']);
-                        currentSinger = musicList[index]['artistName'];
-                        currentTitle = musicList[index]['title'];
-                      });
+              itemCount: musicList.length,
+              itemBuilder: (context, index) => customListTile(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        backgroundColor:  Colors.deepPurple.shade800.withOpacity(0.9),
+                        contentPadding: EdgeInsets.all(16),
+                        content: Container(
+                          width: 300, // Set the desired width for the dialog
+                          height: 400, // Set the desired height for the dialog
+                          child: Column(
+                            children: [
+                              Text(musicList[index]['title']),
+                              SizedBox(height: 16),
+                              Text('Artist: ${musicList[index]['artistName']}'),
+                              SizedBox(height: 8),
+                              Container(
+                                height: 200, // Set the desired height for the image
+                                child: Image.network(
+                                  musicList[index]['cover'],
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              SizedBox(height: 16),
+                              Slider(
+                                value: 0.5, // Set the current seek value
+                                min: 0.0, // Set the minimum value
+                                max: 1.0, // Set the maximum value
+                                onChanged: (double value) {
+                                  // Seek bar logic
+                                },
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  InkWell(
+                                    onTap: () {
+                                      // Play button logic
+                                    },
+                                    child: Icon(
+                                      Icons.skip_previous,
+                                      size: 48,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 32),
+                                  InkWell(
+                                    onTap: () {
+                                      // Play button logic
+                                    },
+                                    child: Icon(
+                                      Icons.play_arrow,
+                                      size: 48,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 32),
+                                  InkWell(
+                                    onTap: () {
+                                      // Next button logic
+                                    },
+                                    child: Icon(
+                                      Icons.skip_next,
+                                      size: 48,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                            ],
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text('Close'),
+                          ),
+                        ],
+                      );
                     },
-                    title: musicList[index]['title'],
-                    artistName: musicList[index]['artistName'],
-                    cover: musicList[index]['cover'])),
+                  );
+                },
+                title: musicList[index]['title'],
+                artistName: musicList[index]['artistName'],
+                cover: musicList[index]['cover'],
+              ),
+            ),
           ),
           Container(
-            decoration: BoxDecoration(color: Colors.white, boxShadow: [
-              BoxShadow(
-                color: Color(0x55212121),
-                blurRadius: 8.0,
-              ),
-            ]),
-            child: Column(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x55212121),
+                  blurRadius: 8.0,
+                ),
+              ],
+            ),
+            child: Stack(
               children: [
-                Slider.adaptive(
-                    value: position.inSeconds.toDouble(),
-                    min: 0.0,
-                    max: duration.inSeconds.toDouble(),
-                    onChanged: (value) {}),
-                Padding(
-                    padding:
-                        EdgeInsets.only(bottom: 8.0, right: 8.0, left: 8.0)),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Container(
-                      padding:
-                          EdgeInsets.only(bottom: 6.0, right: 6.0, left: 6.0),
-                      height: 90.0,
-                      width: 90.0,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16.0),
-                          image: DecorationImage(
-                            image: NetworkImage(currentCover),
-                          )),
+                Align(
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Background Text',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
+                  ),
+                ),
+                Column(
+                  children: [
+                    // Add other music details or controls here.
                   ],
-                )
+                ),
               ],
             ),
           ),
-          SizedBox(
-            width: 10.0,
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                currentTitle,
-                style: TextStyle(
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black12,
-                ),
-              ),
-              SizedBox(
-                height: 5.0,
-              ),
-              Text(
-                currentSinger,
-                style: TextStyle(color: Colors.white, fontSize: 14.0),
-              )
-            ],
-          ),
-          IconButton(
-            onPressed: () {
-              if (isPlaying) {
-                audioPlayer.pause();
-                setState(() {
-                  btnIcon = Icons.pause;
-                  isPlaying = false;
-                });
-              } else {
-                audioPlayer.resume();
-                setState(() {
-                  btnIcon = Icons.play_arrow;
-                  isPlaying = true;
-                });
-              }
-            },
-            iconSize: 50.0,
-            icon: Icon(btnIcon),
-            color: Colors.white,
-          )
         ],
       ),
     );

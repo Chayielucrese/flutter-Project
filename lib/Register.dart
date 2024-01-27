@@ -31,6 +31,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
       _showLoginForm = !_showLoginForm;
     });
   }
+
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       String name = _nameController.text;
@@ -62,41 +63,15 @@ class _RegistrationFormState extends State<RegistrationForm> {
     );
     return response;
   }
+
   void _showLoginDialog(BuildContext context) {
-    void _submitForm() async {
-      if (_formKey.currentState!.validate()) {
-        String name = _nameController.text;
-        String surname = _surnameController.text;
-        String email = _emailController.text;
-        String password = _passwordController.text;
-
-        Future<http.Response> login(String email, String password) async {
-          const url = 'http://localhost:4000/api/login';
-          final response = await http.post(
-            Uri.parse(url),
-            body: {
-              "email": email,
-              "pwd": password,
-            },
-          );
-          return response;
-        }
-
-        final response = await login(email, password);
-        if (response.statusCode == 200) {
-          _formKey.currentState!.reset();
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => playList()),
-          );
-        } else {
-          response.statusCode;
-        }
-      }
-    }
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        final TextEditingController emailController = TextEditingController();
+        final TextEditingController passwordController =
+            TextEditingController();
+
         return AlertDialog(
           backgroundColor: Colors.deepPurple.shade200.withOpacity(0.9),
           title: Text('Sign In'),
@@ -104,27 +79,55 @@ class _RegistrationFormState extends State<RegistrationForm> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
-                decoration: InputDecoration(labelText: 'Email',   labelStyle: TextStyle(color: Colors.white, fontSize: 15), ),
-
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  labelStyle: TextStyle(color: Colors.white, fontSize: 15),
+                ),
+                controller: emailController, // Assign controller
               ),
               TextFormField(
-                decoration: InputDecoration(labelText: 'Password',  labelStyle: TextStyle(color: Colors.white, fontSize: 15)),
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  labelStyle: TextStyle(color: Colors.white, fontSize: 15),
+                ),
                 obscureText: true,
-
+                controller: passwordController, // Assign controller
               ),
             ],
           ),
           actions: [
             ElevatedButton(
-              onPressed: () {
-Navigator.push(context, MaterialPageRoute(builder: (context)=>playList()));
-              },
-              child: Text('Login', style: TextStyle(color: Colors.purple, fontSize: 20),
+              onPressed: () async {
+                String email = emailController.text; // Retrieve email value
+                String password =
+                    passwordController.text; // Retrieve password value
 
+                if (email.trim().isEmpty || password.isEmpty) {
+                  // Perform form validation
+                  return;
+                }
+
+                // Make the login request
+                final response = await login(email, password);
+                if (response.statusCode == 200) {
+                  // Handle successful login
+                  emailController.clear(); // Clear email field
+                  passwordController.clear(); // Clear password field
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => playList()),
+                  );
+                } else {
+                  // Handle login error
+                  response.statusCode;
+                }
+              },
+              child: Text(
+                'Login',
+                style: TextStyle(color: Colors.purple, fontSize: 20),
               ),
             ),
-
-
           ],
         );
       },
@@ -223,18 +226,46 @@ Navigator.push(context, MaterialPageRoute(builder: (context)=>playList()));
                 SizedBox(height: 16),
                 ElevatedButton(
                   style: ButtonStyle(
-                    backgroundColor:MaterialStateProperty.all(Colors.green)
-                  ),
-                  onPressed: (){
+                      backgroundColor: MaterialStateProperty.all(Colors.green)),
+                  onPressed: () async {
                     _showLoginDialog(context);
+                    final _formKey = GlobalKey<FormState>();
+                    final TextEditingController _emailController =
+                        TextEditingController();
+
+                    final TextEditingController _passwordController =
+                        TextEditingController();
+                    String email = _emailController.text;
+                    String password = _passwordController.text;
+
+                    if (email.trim().isEmpty || password.isEmpty) {
+                      // Perform form validation
+                      return;
+                    }
+
+                    // Make the login request
+
+                    final response = await login(email, password);
+                    if (response.statusCode == 200) {
+                      // Handle successful login
+                      _emailController.clear(); // Clear email field
+                      _passwordController.clear(); // Clear password field
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => playList()),
+                      );
+                    } else {
+                      // Handle login error
+                      response.statusCode;
+                    }
                   },
                   child: Text(
                     'Login',
                     style: TextStyle(
-                      color: Colors.purple,
-                      fontSize: 20,
-                      backgroundColor: Colors.green
-                    ),
+                        color: Colors.white,
+                        fontSize: 20,
+                        backgroundColor: Colors.green),
                   ),
                 ),
               ],
@@ -244,4 +275,19 @@ Navigator.push(context, MaterialPageRoute(builder: (context)=>playList()));
       ),
     );
   }
+}
+
+final TextEditingController _emailController = TextEditingController();
+final TextEditingController _passwordController = TextEditingController();
+Future<http.Response> login(String email, String password) async {
+  const url = 'http://localhost:4000/api/login';
+  final response = await http.post(
+    Uri.parse(url),
+    body: {
+      "email": email,
+      "password": password,
+    },
+  );
+
+  return response;
 }
