@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import "package:http/http.dart" as http;
 import 'Components/custom_list.dart';
+import 'package:audioplayers/audioplayers.dart';
 
+import 'Source.dart';
 class playList extends StatefulWidget {
   const playList({Key? key}) : super(key: key);
 
@@ -14,7 +16,20 @@ class _playListState extends State<playList> {
   List musicList = [];
   bool isSearching = false;
   TextEditingController searchController = TextEditingController();
+  AudioPlayer audioPlayer = AudioPlayer();
+  bool isPlaying = false;
+  String currentSongLink = '';
 
+  void playMusic( String link) async{
+    if(isPlaying && currentSongLink != link){
+       await audioPlayer.pause();
+    }else if (isPlaying){
+      await audioPlayer.play(link as Source);
+      setState(() {
+        isPlaying= true;
+      });
+    }
+  }
   void searchSongsBySingerOrTitle(String singer) async {
     try {
       http.Response response = await http.post(
@@ -156,8 +171,8 @@ class _playListState extends State<playList> {
                                   ),
                                   SizedBox(width: 32),
                                   InkWell(
-                                    onTap: () {
-                                      // Play button logic
+                                  onTap: () async {
+                                    playMusic(musicList[index]['link']);
                                     },
                                     child: Icon(
                                       Icons.play_arrow,
@@ -187,7 +202,7 @@ class _playListState extends State<playList> {
                             onPressed: () {
                               Navigator.pop(context);
                             },
-                            child: Text('Close'),
+                            child: Text('Close', style: TextStyle(color: Colors.white),),
                           ),
                         ],
                       );
